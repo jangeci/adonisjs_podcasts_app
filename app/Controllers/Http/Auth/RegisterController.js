@@ -1,14 +1,14 @@
 'use strict'
 
-const {validateAll } = use('Validator')
+const { validateAll } = use('Validator')
 const User = use('App/Models/User')
 
 class RegisterController {
-    showRegister({view}){
+    showRegister({ view }) {
         return view.render('auth.register')
     }
 
-    async register({request, response, auth}){
+    async register({ request, response, auth, session }) {
         const userData = request.only(['name', 'email', 'password'])
         const rules = {
             name: 'required',
@@ -18,12 +18,12 @@ class RegisterController {
 
         const validation = await validateAll(request.all(), rules)
 
-        if(validation.fails()){
-            sessionStorage.withErrors(validation.messages().flashExcept(['password']))
+        if (validation.fails()) {
+            session.withErrors(validation.messages()).flashExcept(['password'])
             return response.redirect('back')
         }
 
-        const user = await User.create(request.all())
+        const user = await User.create(userData)
         await auth.login(user)
         return response.route('dashboard')
     }
